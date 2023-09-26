@@ -1,0 +1,54 @@
+name: run test.py
+run-name: ${{inputs.test}} OKAYYYY LEEETS GOOO
+
+on:
+  workflow_dispatch:
+    inputs:
+      test:
+        description: "lol"
+        default: ${{ env.def }}
+      customTime:
+        description: "jaja"
+      use_cappa_release:
+        default: false
+env:
+  def: 'abc'
+  
+jobs:
+  build:
+    env:
+      TEST: ${{ github.event.inputs.customTime }}
+    runs-on: ubuntu-latest
+    name: ${{inputs.test}} OKAYYYY
+    steps:
+      - name: Set Current Time
+        if: inputs.customTime == ''
+        id: set_time
+        run: |
+          echo "TEST=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")" >> $GITHUB_ENV
+        
+      - name: checkout repo content
+        uses: actions/checkout@v2 # checkout the repository content to github runner
+
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9' # install the python version needed
+          
+      - name: hiho
+        run: |
+          echo ${{ github.workspace }}
+          output=$(python test.py)
+          ticket_id=$(echo "$output" | tail -n 1 | grep -oE 'CICDSSWA-[0-9]+')
+          echo "changelog=$ticket_id" >> $GITHUB_OUTPUT
+        id: step1
+        
+      - name: Print changelog
+        run: echo "${{ steps.step1.outputs.changelog }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: ansi test
+        run: echo -e "\e[43m Test \e[43m"
+      
+      
+      - name: some more test
+        run: echo ${{ inputs.use_cappa_release || true }}
